@@ -1,8 +1,20 @@
 import React, { forwardRef } from "react";
 import { ChatAltIcon, ShareIcon, ThumbUpIcon } from "@heroicons/react/outline";
+import { useSession } from "next-auth/client";
+import { db } from "../firebase";
 
 const Post = forwardRef(
-  ({ name, message, postImage, image, timestamp }, ref) => {
+  ({ name, message, postImage, image, timestamp, id }, ref) => {
+    const [session] = useSession();
+
+    const likePost = (id) => {
+      console.log("post is liked by", session.user.email);
+      console.log("post id is ", id);
+      db.collection("posts").doc(id).collection("likes").add({
+        userEmail: session.user.email,
+      });
+    };
+
     return (
       <div ref={ref} className="flex flex-col">
         <div className="p-5 bg-white mt-5 rounded-t-2xl shadow-sm">
@@ -40,7 +52,10 @@ const Post = forwardRef(
 
         {/* Footer */}
         <div className="flex justify-between items-center rounded-b-2xl bg-white shadow-md text-gray-400 border-t">
-          <div className="inputIcon rounded-none rounded-bl-2xl">
+          <div
+            className="inputIcon rounded-none rounded-bl-2xl"
+            onClick={() => likePost(id)}
+          >
             <ThumbUpIcon className="h-4" />
             <p className="text-xs sm:text-base">Like</p>
           </div>

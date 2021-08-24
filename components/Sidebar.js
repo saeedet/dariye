@@ -1,20 +1,25 @@
 import { useSession } from "next-auth/client";
 import React from "react";
+import { useSelector } from "react-redux";
+import { selectMasks } from "../redux/features/memberSlice";
 import SidebarRow from "./SidebarRow";
 
 function Sidebar() {
   const [session] = useSession();
-  // console.log(session.user.image);
+
+  const masks = useSelector(selectMasks);
+
   return (
     <div className="mt-5 max-w-[600px] xl:min-w-[300px] flex flex-col ">
       <SidebarRow src={session.user.image} title={session.user.name} />
-      <SidebarRow src={""} title="Friends" />
-      <SidebarRow src={""} title="Groups" />
-      <SidebarRow src={""} title="Marketplace" />
-      <SidebarRow src={""} title="Watch" />
-      <SidebarRow src={""} title="Events" />
-      <SidebarRow src={""} title="Memories" />
-      <SidebarRow src={""} title="See More" />
+      <div className=" flex space-x-4 items-center mt-4">
+        <div className="border-b flex-grow"></div>
+        <div>Masks</div>
+        <div className="border-b flex-grow"></div>
+      </div>
+      {masks?.map((mask) => (
+        <SidebarRow src={mask.src} title={mask.name} />
+      ))}
     </div>
   );
 }

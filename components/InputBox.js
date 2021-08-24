@@ -1,28 +1,41 @@
 import { useSession } from "next-auth/client";
 import React, { useRef, useState } from "react";
-import { EmojiHappyIcon } from "@heroicons/react/outline";
-import { CameraIcon, VideoCameraIcon } from "@heroicons/react/solid";
+import { CameraIcon } from "@heroicons/react/solid";
 import { db, storage } from "../firebase";
 import firebase from "firebase";
 import { Avatar } from "@material-ui/core";
+import { useSelector } from "react-redux";
+import { selectSelectedMask } from "../redux/features/memberSlice";
+import SendIcon from "@material-ui/icons/Send";
 
 function InputBox() {
   const [session] = useSession();
   const inputRef = useRef(null);
   const fileRef = useRef(null);
   const [postImage, setPostImage] = useState();
+  const selectedMask = useSelector(selectSelectedMask);
 
   const sendPost = (e) => {
     e.preventDefault();
     if (!inputRef.current.value) return;
 
+    // Switching the mask
+    let name = session.user.name;
+    let image = session.user.image;
+    if (selectedMask) {
+      name = selectedMask.name;
+      image = selectedMask.image;
+    }
+
+    // Injecting the post into our database
     db.collection("posts")
       .add({
         message: inputRef.current.value,
-        name: session.user.name,
+        name: name,
+        image: image,
         email: session.user.email,
-        image: session.user.image,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        likes: 0,
       })
       .then((doc) => {
         if (postImage) {
@@ -73,9 +86,12 @@ function InputBox() {
   };
 
   return (
-    <div className="bg-white p-2 rounded-2xl shadow-md text-gray-500 font-medium ">
+    <div className="bg-white px-2 rounded-2xl shadow-md text-gray-500 font-medium ">
       <div className="flex space-x-4 p-4 items-center">
-        <Avatar src={session.user.image} className="h-8 w-8" />
+        <Avatar
+          src={!selectedMask ? session.user.image : selectedMask.image}
+          className="h-8 w-8"
+        />
         <form className="flex flex-1" onSubmit={sendPost}>
           <input
             ref={inputRef}
@@ -102,19 +118,21 @@ function InputBox() {
           </div>
         )}
       </div>
-      <div className="flex justify-evenly p-3 border-t">
-        <div className="inputIcon">
-          <VideoCameraIcon className="h-7 text-red-500" />
-          <p className="text-xs sm:text-sm xl:text-base">Live Video</p>
-        </div>
-        <div className="inputIcon" onClick={() => fileRef.current.click()}>
+      <div className="flex justify-between w-full p-4 border-t">
+        <div
+          className="inputIcon flex justify-start pl-6 rounded-l-full w-[50%]"
+          onClick={() => fileRef.current.click()}
+        >
           <CameraIcon className="h-7 text-green-400" />
           <p className="text-xs sm:text-sm xl:text-base">Photo/Video</p>
           <input type="file" hidden onChange={addImageToPost} ref={fileRef} />
         </div>
-        <div className="inputIcon">
-          <EmojiHappyIcon className="h-7 text-yellow-300" />
-          <p className="text-xs sm:text-sm xl:text-base">Feeling/Activity</p>
+        <div
+          className="inputIcon rounded-r-full flex justify-end pr-6  w-[50%]"
+          onClick={sendPost}
+        >
+          <p className="text-xs sm:text-sm xl:text-base">Send</p>
+          <SendIcon className="h-7 text-red-400" />
         </div>
       </div>
     </div>
