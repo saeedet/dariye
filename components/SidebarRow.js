@@ -1,16 +1,14 @@
 // import Image from "next/image";
 import { Avatar } from "@material-ui/core";
-import { useSession } from "next-auth/client";
 import React from "react";
 import { useDispatch } from "react-redux";
 import { setSelectedMask } from "../redux/features/memberSlice";
 
-function SidebarRow({ src, title }) {
+function SidebarRow({ src, title, user }) {
   const dispatch = useDispatch();
-  const [session] = useSession();
 
   const clickHandler = (name, image) => {
-    if (session.user.name == name) {
+    if (user.displayName == name) {
       dispatch(setSelectedMask(null));
     } else {
       dispatch(

@@ -1,74 +1,205 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useEffect, useState } from "react";
 import { ChatAltIcon, ShareIcon, ThumbUpIcon } from "@heroicons/react/outline";
-import { useSession } from "next-auth/client";
 import { db } from "../firebase";
+import {
+  Avatar,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  CardMedia,
+  IconButton,
+  makeStyles,
+  Typography,
+} from "@material-ui/core";
+import firebase from "firebase";
+import { useDocument } from "react-firebase-hooks/firestore";
+import { MoreHorizOutlined } from "@material-ui/icons";
+import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
+
+// Card style
+const useStyles = makeStyles((theme) => ({
+  root: {
+    borderRadius: "7px",
+    marginTop: "20px",
+    display: "flex",
+    flexDirection: "column",
+  },
+  header: {
+    padding: "12px 16px 0 16px",
+    marginBottom: "12px",
+  },
+  content: {
+    padding: "4px 16px 16px 16px",
+  },
+  headerTitle: {
+    fontWeight: "bold",
+  },
+}));
 
 const Post = forwardRef(
-  ({ name, message, postImage, image, timestamp, id }, ref) => {
-    const [session] = useSession();
+  (
+    { name, message, postImage, image, timestamp, id, user, userLikes },
+    ref
+  ) => {
+    const classes = useStyles();
+    //-------------------------------------------POST LIKES ---------------------//
+    // the state of the UI post like number
+    const [likesCount, setLikesCount] = useState(0);
 
+    // Keep tracking of the post likes number LIVE
+    const [likes, loading, error] = useDocument(
+      firebase.firestore().doc(`posts/${id}`)
+    );
+
+    // changing the like number whenever it changes in database
+    useEffect(() => {
+      setLikesCount(likes?.data().likes);
+    }, [likes?.data().likes]);
+
+    //Check if the post is already liked
+    const [liked, setLiked] = useState(false);
+
+    useEffect(() => {
+      if (userLikes.includes(id)) {
+        setLiked(true);
+      }
+    }, [userLikes]);
+
+    // Function for inserting or removing likes to/from database
     const likePost = (id) => {
-      console.log("post is liked by", session.user.email);
-      console.log("post id is ", id);
-      db.collection("posts").doc(id).collection("likes").add({
-        userEmail: session.user.email,
-      });
+      if (!liked) {
+        // if the post is not liked
+        db.collection("users")
+          .doc(user.uid)
+          .collection("likes")
+          .doc(id)
+          .set({
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          })
+          .then(setLikesCount((prevCount) => prevCount + 1))
+          .then(setLiked(true));
+      } else {
+        // if the post is already liked
+        db.collection("users")
+          .doc(user.uid)
+          .collection("likes")
+          .doc(id)
+          .delete()
+          .then(setLikesCount((prevCount) => prevCount - 1))
+          .then(setLiked(false));
+      }
     };
+    //-------------------------------------------POST LIKES ---------------------//
+
+    // switching the post title phont size
+    function countWords(str) {
+      str = str.replace(/(^\s*)|(\s*$)/gi, "");
+      str = str.replace(/[ ]{2,}/gi, " ");
+      str = str.replace(/\n /, "\n");
+      return str.split(" ").length;
+    }
 
     return (
-      <div ref={ref} className="flex flex-col">
-        <div className="p-5 bg-white mt-5 rounded-t-2xl shadow-sm">
-          <div className="flex items-center space-x-2">
-            <img
-              className="rounded-full"
-              src={image}
-              alt="profile-pic"
-              width={40}
-              height={40}
-            />
-            <div>
-              <p className="font-medium ">{name}</p>
-              {timestamp ? (
-                <p className="text-xs text-gray-400">
-                  {new Date(timestamp?.toDate()).toLocaleString()}
-                </p>
-              ) : (
-                <p className="text-sm text-gray-400">Loading...</p>
-              )}
-            </div>
-          </div>
-          <p className="pt-4">{message}</p>
-        </div>
+      <Card ref={ref} className={classes.root}>
+        {/* ---------------------------Header-------------------- */}
+        <CardHeader
+          className={classes.header}
+          avatar={
+            <Avatar src={image} className={classes.avatar}>
+              {user?.displayName}
+            </Avatar>
+          }
+          action={
+            <IconButton aria-label="settings">
+              <MoreHorizOutlined />
+            </IconButton>
+          }
+          title={name}
+          classes={{
+            title: classes.headerTitle,
+          }}
+          subheader={new Date(timestamp?.toDate()).toLocaleString()}
+        />
+        {/* ---------------------------Content------------------ */}
+        <CardContent className={classes.content}>
+          <Typography
+            variant={countWords(message) === 1 ? "h6" : "body1"}
+            color="textPrimary"
+            component="p"
+          >
+            {message}
+          </Typography>
+        </CardContent>
+        {/* ---------------------------Image------------------- */}
         {postImage && (
-          <div className="relative h-56 md:h-96 bg-white">
-            <img
-              src={postImage}
-              alt=""
-              loading="lazy"
-              className="object-cover w-[100%] h-[100%]"
-            />
+          <CardMedia className="h-56 md:h-96" image={postImage} title={name} />
+        )}
+
+        {/* ----------------Footer__likes---------------------- */}
+        {likesCount !== 0 && (
+          <div className="mx-[16px] py-[10px] px-1 border-t flex justify-between text-gray-500">
+            <div className="flex">
+              <ThumbUpAltIcon className="text-blue-500 pr-1" />
+              <div className="ml-1">{likesCount}</div>
+            </div>
+            <div>0 Comments</div>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="flex justify-between items-center rounded-b-2xl bg-white shadow-md text-gray-400 border-t">
-          <div
-            className="inputIcon rounded-none rounded-bl-2xl"
-            onClick={() => likePost(id)}
-          >
-            <ThumbUpIcon className="h-4" />
-            <p className="text-xs sm:text-base">Like</p>
+        {/* ----------------Footer__Buttons---------------------- */}
+        <div className="mx-[16px]">
+          <CardActions className="flex space-x-2 items-center  border-t">
+            <Button
+              size="small"
+              color="primary"
+              className={`flex-1 `}
+              onClick={() => likePost(id)}
+            >
+              <ThumbUpIcon
+                className={`h-4 ${liked ? "text-blue-500" : "text-gray-600"}`}
+              />
+              <p
+                className={`text-xs capitalize pl-1 font-semibold ${
+                  liked ? "text-blue-500" : "text-gray-600"
+                } sm:text-sm xl:text-base`}
+              >
+                Like
+              </p>
+            </Button>
+            <Button size="small" color="primary" className="flex-1">
+              <ChatAltIcon className="h-4 text-gray-600" />
+              <p className="text-xs capitalize pl-1 font-semibold text-gray-600 sm:text-sm xl:text-base">
+                Comment
+              </p>
+            </Button>
+            <Button size="small" color="primary" className="flex-1">
+              <ShareIcon className="h-4 text-gray-600" />
+              <p className="text-xs capitalize pl-1 font-semibold text-gray-600 sm:text-sm xl:text-base">
+                Share
+              </p>
+            </Button>
+          </CardActions>
+        </div>
+        {/* <div ">
+          <div className="inputIcon rounded-none " onClick={() => likePost(id)}>
+            <p>{likesCount}</p>
+            <ThumbUpIcon className={`h-4 ${liked && "text-blue-500"}`} />
+            <p className={`text-xs sm:text-base ${liked && "text-blue-500"}`}>
+              {liked ? "Liked" : "Like"}
+            </p>
           </div>
           <div className="inputIcon rounded-none ">
             <ChatAltIcon className="h-4" />
             <p className="text-xs sm:text-base">Comment</p>
           </div>
-          <div className="inputIcon rounded-none rounded-br-2xl">
+          <div className="inputIcon rounded-none">
             <ShareIcon className="h-4" />
             <p className="text-xs sm:text-base">Share</p>
           </div>
-        </div>
-      </div>
+        </div> */}
+      </Card>
     );
   }
 );

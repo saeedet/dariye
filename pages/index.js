@@ -10,10 +10,15 @@ import { getSession } from "next-auth/client";
 import Feed from "../components/Feed";
 import Widgets from "../components/Widgets";
 import { selectMasks, setMasks } from "../redux/features/memberSlice";
+import { useAuthState } from "react-firebase-hooks/auth";
+import Auth from "../components/Auth";
+import firebase from "firebase";
 
-export default function Home({ session, posts }) {
-  if (!session) return <Login />;
-  const masks = useSelector(selectMasks);
+export default function Home({ posts }) {
+  // if (!session) return <Login />;
+  // const masks = useSelector(selectMasks);
+  const [user, loading, error] = useAuthState(firebase.auth());
+
   const dispatch = useDispatch();
 
   // console.log(masks);
@@ -27,29 +32,32 @@ export default function Home({ session, posts }) {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 scrollbar-hide">
+    <div className="flex flex-col h-full bg-gray-100 scrollbar-hide relative">
       <Head>
         <title>Create Next App</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <Header session={session} />
-      <div className="flex justify-center ">
-        {/* <div className="shadow-md"></div>  */}
-        <main className="flex flex-grow max-w-6xl px-5">
-          <Sidebar />
-          <Feed posts={posts} />
-          <Widgets />
-        </main>
-        {/* <div className="shadow-md"></div> */}
-      </div>
+      {loading && (
+        <p className="text-3xl font-semibold absolute top-5">Loading...</p>
+      )}
+      {!user && <Auth />}
+      {user && (
+        <>
+          <Header user={user} />
+          <div className="flex px-2 mt-[70px] ">
+            <Sidebar user={user} />
+            <Feed posts={posts} user={user} />
+            <Widgets user={user} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps() {
   // Get the user
-  const session = await getSession(context);
+  // const session = await getSession(context);
 
   // Get the masks data
   // const masks = await fetch("/dariyeData.json").then((data) => data.json());
@@ -64,7 +72,7 @@ export async function getServerSideProps(context) {
   }));
   return {
     props: {
-      session,
+      // session,
       posts: docs,
     },
   };
