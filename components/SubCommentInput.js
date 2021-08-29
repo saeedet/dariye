@@ -5,22 +5,22 @@ import { db } from "../firebase";
 import { selectSelectedMask } from "../redux/features/memberSlice";
 import firebase from "firebase";
 
-// Material ui styles
 const useStyles = makeStyles((theme) => ({
   avatar: {
-    width: "32px",
-    height: "32px",
+    width: "24px",
+    height: "24px",
+    marginTop: "2px",
   },
 }));
 
-function CommentInput({ postId, user, inputViewRef }) {
+function SubCommentInput({ postId, user, commentInputRef, commentId }) {
   const classes = useStyles();
-  const inputRef = useRef(null);
+  const subCommentInputRef = useRef(null);
   const selectedMask = useSelector(selectSelectedMask);
 
-  const sendComment = (e) => {
+  const sendSubComment = (e) => {
     e.preventDefault();
-    if (!inputRef.current.value) return;
+    if (!subCommentInputRef.current.value) return;
 
     // Switching the mask
     let name = user.displayName;
@@ -32,16 +32,22 @@ function CommentInput({ postId, user, inputViewRef }) {
 
     // Injecting the comment into our database
 
-    db.collection("posts").doc(postId).collection("comments").add({
-      message: inputRef.current.value,
-      name: name,
-      image: image,
-      user: user.uid,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      likes: 0,
-    });
+    db.collection("posts")
+      .doc(postId)
+      .collection("comments")
+      .doc(commentId)
+      .collection("comments")
+      .add({
+        postId: postId,
+        message: subCommentInputRef.current.value,
+        name: name,
+        image: image,
+        user: user.uid,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        likes: 0,
+      });
 
-    inputRef.current.value = "";
+    subCommentInputRef.current.value = "";
   };
 
   return (
@@ -51,17 +57,17 @@ function CommentInput({ postId, user, inputViewRef }) {
         className={classes.avatar}
       />
       <form
-        onSubmit={sendComment}
+        onSubmit={sendSubComment}
         className="flex-grow ml-[7px]"
-        ref={inputViewRef}
+        ref={commentInputRef}
       >
         <input
-          ref={inputRef}
+          ref={subCommentInputRef}
           className="rounded-full h-[36px] w-full placeholder-gray-500 placeholder-opacity-100 bg-gray-100 flex-grow px-5 focus:outline-none"
           type="text"
           placeholder="Write a comment..."
         />
-        <button className="hidden" onClick={sendComment}>
+        <button className="hidden" onClick={sendSubComment}>
           Submit
         </button>
       </form>
@@ -69,4 +75,4 @@ function CommentInput({ postId, user, inputViewRef }) {
   );
 }
 
-export default CommentInput;
+export default SubCommentInput;

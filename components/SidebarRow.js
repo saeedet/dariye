@@ -23,7 +23,7 @@ function SidebarRow({ src, title, user }) {
   return (
     <div
       onClick={() => clickHandler(title, src)}
-      className="flex items-center space-x-2 p-2 hover:bg-gray-200 rounded-xl cursor-pointer"
+      className="flex items-center space-x-2 p-2 hover:bg-gray-200 rounded-[7px] cursor-pointer"
     >
       <Avatar src={src} className="h-8 w-8" />
       <p className="hidden sm:inline-flex font-medium">{title}</p>

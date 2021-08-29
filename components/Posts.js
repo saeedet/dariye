@@ -33,7 +33,6 @@ function Posts({ posts, user }) {
                 timestamp={post.data().timestamp}
                 image={post.data().image}
                 postImage={post.data().postImage}
-                likes={post.data().likes}
                 userLikes={userLikes}
               />
             ))

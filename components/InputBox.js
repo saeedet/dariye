@@ -106,9 +106,13 @@ function InputBox({ user }) {
         <form className="flex flex-1 " onSubmit={sendPost}>
           <input
             ref={inputRef}
-            className="rounded-full h-10 placeholder-gray-500 placeholder-opacity-100 bg-gray-100 flex-grow px-5 focus:outline-none"
+            className="rounded-full h-10 placeholder-gray-500 placeholder-opacity-100 bg-gray-100 flex-grow px-5 focus:outline-none w-full"
             type="text"
-            placeholder={`What's on your mind, ${user.displayName}`}
+            placeholder={
+              selectedMask
+                ? `What you would say if you were, ${selectedMask.name}`
+                : `What's on your mind, ${user.displayName}`
+            }
           />
           <button className="hidden" onClick={sendPost}>
             Submit
@@ -135,14 +139,14 @@ function InputBox({ user }) {
           onClick={() => fileRef.current.click()}
         >
           <CameraIcon className="h-7 text-green-400" />
-          <p className="text-xs font-semibold text-gray-600 sm:text-sm xl:text-base">
+          <p className="hidden sm:inline-flex text-xs font-semibold text-gray-600 sm:text-sm xl:text-base">
             Photo/Video
           </p>
           <input type="file" hidden onChange={addImageToPost} ref={fileRef} />
         </div>
         <div className="inputIcon flex p-[8px] w-[33.33%] justify-center ">
           <EmojiHappyIcon className="h-7 text-yellow-300" />
-          <p className="text-xs font-semibold text-gray-600 sm:text-sm xl:text-base">
+          <p className="hidden sm:inline-flex text-xs font-semibold text-gray-600 sm:text-sm xl:text-base">
             Feeling/Activity
           </p>
         </div>
@@ -151,7 +155,7 @@ function InputBox({ user }) {
           onClick={sendPost}
         >
           <SendIcon className="h-7 text-red-400" />
-          <p className="text-xs font-semibold text-gray-600 sm:text-sm xl:text-base">
+          <p className="hidden sm:inline-flex text-xs font-semibold text-gray-600 sm:text-sm xl:text-base">
             Send a post
           </p>
         </div>

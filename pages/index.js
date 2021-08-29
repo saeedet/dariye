@@ -10,15 +10,28 @@ import { setMasks } from "../redux/features/memberSlice";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Auth from "../components/Auth";
 import firebase from "firebase";
+import { useCollection } from "react-firebase-hooks/firestore";
 
 export default function Home({ posts, ghosts }) {
   const [user, loading, error] = useAuthState(firebase.auth());
-
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(setMasks(ghosts));
   }, []);
+
+  const [realtimeGhosts] = useCollection(
+    db.collection("ghosts").orderBy("timestamp", "desc")
+  );
+
+  useEffect(() => {
+    const ghostsDocs = realtimeGhosts?.docs.map((ghost) => ({
+      id: ghost.id,
+      name: ghost.data().name,
+      src: ghost.data().src,
+    }));
+    dispatch(setMasks(ghostsDocs));
+  }, [realtimeGhosts]);
 
   return (
     <div className="flex flex-col max-h-screen bg-gray-100 relative">
@@ -33,7 +46,7 @@ export default function Home({ posts, ghosts }) {
       {user && (
         <>
           <Header user={user} />
-          <div className="flex px-2 pt-[70px] max-h-screen ">
+          <div className="flex pl-0 pr-2 sm:px-2 pt-[70px] max-h-screen ">
             <Sidebar user={user} />
             <Feed posts={posts} user={user} />
             <Widgets user={user} />
@@ -54,6 +67,7 @@ export async function getServerSideProps() {
   const ghostsDocs = ghosts.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
+    timestamp: null,
   }));
 
   // Get the posts
@@ -70,7 +84,7 @@ export async function getServerSideProps() {
   }));
   return {
     props: {
-      ghosts: ghostsDocs,
+      // ghosts: ghostsDocs,
       posts: postsDocs,
     },
   };

@@ -17,7 +17,6 @@ import firebase from "firebase";
 import { useCollection, useDocument } from "react-firebase-hooks/firestore";
 import { MoreHorizOutlined } from "@material-ui/icons";
 import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
-import CommentInput from "./CommentInput";
 import Comments from "./Comments";
 import fromnow from "fromnow";
 
@@ -54,16 +53,46 @@ const Post = forwardRef(
     ref
   ) => {
     const inputViewRef = useRef(null);
-
-    const executeScroll = () =>
-      inputViewRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-
-    //-------------
     const [renderComments, setRenderComments] = useState(false);
     const [displayComments, setDisplayComments] = useState(false);
+    const [likesCount, setLikesCount] = useState(0);
+    const [liked, setLiked] = useState(false);
+    const classes = useStyles();
+    const [realtimeCommentsCount] = useCollection(
+      db.collection("posts").doc(id).collection("comments")
+    );
+    const [likes, loading, error] = useDocument(
+      firebase.firestore().doc(`posts/${id}`)
+    );
+
+    //Scroll to comment input logic
+    const executeScroll = () => {
+      if (!renderComments) {
+        setRenderComments(true);
+      }
+      if (!displayComments) {
+        setDisplayComments(true);
+        setTimeout(() => {
+          inputViewRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          setTimeout(() => {
+            inputViewRef.current[0].focus();
+          }, 500);
+        }, 180);
+      } else {
+        inputViewRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        setTimeout(() => {
+          inputViewRef.current[0].focus();
+        }, 500);
+      }
+    };
+
+    //------------- display comments switch
 
     const commentsDisplayHandler = () => {
       setDisplayComments(!displayComments);
@@ -72,29 +101,14 @@ const Post = forwardRef(
       }
     };
 
-    // ------Comments count realtime hook
-    const [realtimeCommentsCount] = useCollection(
-      db.collection("posts").doc(id).collection("comments")
-    );
-    // material ui style
-    const classes = useStyles();
+    //-------------------POST LIKES ---------------------//
 
-    //-------------------------------------------POST LIKES ---------------------//
-    // the state of the UI post like number
-    const [likesCount, setLikesCount] = useState(0);
-
-    // Keep tracking of the post likes number LIVE
-    const [likes, loading, error] = useDocument(
-      firebase.firestore().doc(`posts/${id}`)
-    );
-
-    // changing the like number whenever it changes in database
+    // changing the likes count whenever it changes in database
     useEffect(() => {
       setLikesCount(likes?.data().likes);
     }, [likes?.data().likes]);
 
     //Check if the post is already liked
-    const [liked, setLiked] = useState(false);
 
     useEffect(() => {
       if (userLikes.includes(id)) {
@@ -126,9 +140,8 @@ const Post = forwardRef(
           .then(setLiked(false));
       }
     };
-    //-------------------------------------------POST LIKES ---------------------//
 
-    // switching the post title phont size
+    //------- switching the post title phont size
     function countWords(str) {
       str = str.replace(/(^\s*)|(\s*$)/gi, "");
       str = str.replace(/[ ]{2,}/gi, " ");
@@ -203,7 +216,7 @@ const Post = forwardRef(
                 className={`h-4 ${liked ? "text-blue-500" : "text-gray-600"}`}
               />
               <p
-                className={`text-xs capitalize pl-1 font-semibold ${
+                className={`text-[10px] sm:text-xs capitalize pl-1 font-semibold ${
                   liked ? "text-blue-500" : "text-gray-600"
                 } sm:text-sm xl:text-base`}
               >
@@ -217,22 +230,28 @@ const Post = forwardRef(
               onClick={executeScroll}
             >
               <ChatAltIcon className="h-4 text-gray-600" />
-              <p className="text-xs capitalize pl-1 font-semibold text-gray-600 sm:text-sm xl:text-base">
+              <p className="text-[10px]  capitalize pl-1 font-semibold text-gray-600 sm:text-sm xl:text-base">
                 Comment
               </p>
             </Button>
             <Button size="small" color="primary" className="flex-1">
               <ShareIcon className="h-4 text-gray-600" />
-              <p className="text-xs capitalize pl-1 font-semibold text-gray-600 sm:text-sm xl:text-base">
+              <p className="text-[10px]  capitalize pl-1 font-semibold text-gray-600 sm:text-sm xl:text-base">
                 Share
               </p>
             </Button>
           </CardActions>
         </div>
         {renderComments && (
-          <Comments id={id} displayComments={displayComments} />
+          <Comments
+            userLikes={userLikes}
+            renderComments={renderComments}
+            postId={id}
+            displayComments={displayComments}
+            user={user}
+            inputViewRef={inputViewRef}
+          />
         )}
-        <CommentInput id={id} user={user} inputViewRef={inputViewRef} />
       </Card>
     );
   }
