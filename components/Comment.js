@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
     marginTop: "2px",
   },
 }));
-
+// reusable
 const Comment = forwardRef(
   (
     { userLikes, postId, commentId, image, message, name, timestamp, user },
