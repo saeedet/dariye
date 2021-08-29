@@ -1,12 +1,12 @@
 import React from "react";
-import { useCollection, useDocument } from "react-firebase-hooks/firestore";
+import { useCollection } from "react-firebase-hooks/firestore";
 import { db } from "../firebase";
 import Post from "./Post";
 import FlipMove from "react-flip-move";
 
 function Posts({ posts, user }) {
   const [realtimePosts] = useCollection(
-    db.collection("posts").orderBy("timestamp", "desc")
+    db.collection("posts").orderBy("timestamp", "desc").limit(10)
   );
 
   const [realtimeUserLikes] = useCollection(
@@ -16,32 +16,7 @@ function Posts({ posts, user }) {
   let userLikes = [];
   if (realtimeUserLikes) {
     realtimeUserLikes.docs.map((doc) => userLikes.push(doc.id));
-    console.log(userLikes);
-    console.log(userLikes.includes("in8sw0cVQXpD5fN3gUfU"));
   }
-  // const getUserLikes = async (id) => {
-  //   await db
-  //     .collection("users")
-  //     .doc(user.uid)
-  //     .collection("likes")
-  //     .get()
-  //     .then((docs) => {
-  //       docs.map((doc) => {
-  //         userLikes.push(doc.id);
-  //       });
-  //     });
-  // };
-
-  // const dbUserLikes = db
-  //   .collection("users")
-  //   .doc(user.uid)
-  //   .collection("likes")
-  //   .get()
-  //   .then((docs) => {
-  //     docs.map((doc) => {
-  //       userLikes.push(doc.id);
-  //     });
-  //   });
 
   return (
     <div>

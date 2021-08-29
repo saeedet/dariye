@@ -10,7 +10,7 @@ function Header({ user }) {
       <div className=" h-full flex flex-grow justify-between items-center ">
         <div>
           <p className="text-red-400 font-bold pl-[8px] sm:font-extrabold text-2xl sm:text-4xl">
-            DARIYE
+            GhostBook
           </p>
         </div>
         <div

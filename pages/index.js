@@ -1,40 +1,29 @@
 import Head from "next/head";
-import Login from "../components/Login";
 import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
 import { db } from "../firebase";
 import { useEffect } from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
-import { getSession } from "next-auth/client";
 import Feed from "../components/Feed";
 import Widgets from "../components/Widgets";
-import { selectMasks, setMasks } from "../redux/features/memberSlice";
+import { setMasks } from "../redux/features/memberSlice";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Auth from "../components/Auth";
 import firebase from "firebase";
 
-export default function Home({ posts }) {
-  // if (!session) return <Login />;
-  // const masks = useSelector(selectMasks);
+export default function Home({ posts, ghosts }) {
   const [user, loading, error] = useAuthState(firebase.auth());
 
   const dispatch = useDispatch();
 
-  // console.log(masks);
-
   useEffect(() => {
-    fetch("/dariyeData.json")
-      .then((data) => data.json())
-      .then((data) => {
-        dispatch(setMasks(data.masks));
-      });
+    dispatch(setMasks(ghosts));
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-gray-100 scrollbar-hide relative">
+    <div className="flex flex-col max-h-screen bg-gray-100 relative">
       <Head>
-        <title>Create Next App</title>
+        <title>GhostBook</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {loading && (
@@ -44,7 +33,7 @@ export default function Home({ posts }) {
       {user && (
         <>
           <Header user={user} />
-          <div className="flex px-2 mt-[70px] ">
+          <div className="flex px-2 pt-[70px] max-h-screen ">
             <Sidebar user={user} />
             <Feed posts={posts} user={user} />
             <Widgets user={user} />
@@ -59,21 +48,30 @@ export async function getServerSideProps() {
   // Get the user
   // const session = await getSession(context);
 
-  // Get the masks data
-  // const masks = await fetch("/dariyeData.json").then((data) => data.json());
+  // Get ghosts data
+  const ghosts = await db.collection("ghosts").get();
+
+  const ghostsDocs = ghosts.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 
   // Get the posts
-  const posts = await db.collection("posts").orderBy("timestamp", "desc").get();
+  const posts = await db
+    .collection("posts")
+    .orderBy("timestamp", "desc")
+    .limit(10)
+    .get();
 
-  const docs = posts.docs.map((post) => ({
+  const postsDocs = posts.docs.map((post) => ({
     id: post.id,
     ...post.data(),
     timestamp: null,
   }));
   return {
     props: {
-      // session,
-      posts: docs,
+      ghosts: ghostsDocs,
+      posts: postsDocs,
     },
   };
 }

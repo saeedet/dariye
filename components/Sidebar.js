@@ -7,7 +7,7 @@ function Sidebar({ user }) {
   const masks = useSelector(selectMasks);
 
   return (
-    <div className="mt-5 max-w-[600px] xl:min-w-[300px] flex flex-col ">
+    <div className="pt-5 max-w-[600px] xl:min-w-[300px] flex flex-col ">
       <SidebarRow src={user.photoURL} title={user.displayName} user={user} />
       <div className=" flex space-x-4 items-center mt-4">
         <div className="border-b hidden sm:inline-flex flex-grow "></div>

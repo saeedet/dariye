@@ -1,4 +1,3 @@
-import { useSession } from "next-auth/client";
 import React, { useRef, useState } from "react";
 import { CameraIcon } from "@heroicons/react/solid";
 import { db, storage } from "../firebase";

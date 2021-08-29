@@ -6,7 +6,7 @@ import Member from "./Member";
 function Widgets({ user }) {
   const masks = useSelector(selectMasks);
   return (
-    <div className="hidden lg:flex flex-col w-60 mt-5 p-2">
+    <div className="hidden lg:flex flex-col w-60  p-2 pt-5">
       <div className="flex justify-between items-center text-gray-500 mb-5 pb-2 border-b-2">
         <h2 className="text-xl">Online Members</h2>
         {/* <div className="flex space-x-2"></div> */}
