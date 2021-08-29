@@ -4,9 +4,10 @@ import { db, storage } from "../firebase";
 import firebase from "firebase";
 import { Avatar, Card, makeStyles } from "@material-ui/core";
 import { useSelector } from "react-redux";
-import { selectSelectedMask } from "../redux/features/memberSlice";
+import { selectSelectedGhost } from "../redux/features/ghostSlice";
 import SendIcon from "@material-ui/icons/Send";
 import { EmojiHappyIcon } from "@heroicons/react/outline";
+import { selectUser } from "../redux/features/userSlice";
 
 // Card styles
 const useStyles = makeStyles((theme) => ({
@@ -19,11 +20,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function InputBox({ user }) {
+function InputBox() {
+  const user = useSelector(selectUser);
+  const selectedGhost = useSelector(selectSelectedGhost);
   const inputRef = useRef(null);
   const fileRef = useRef(null);
   const [postImage, setPostImage] = useState();
-  const selectedMask = useSelector(selectSelectedMask);
   const classes = useStyles();
 
   const sendPost = (e) => {
@@ -31,11 +33,11 @@ function InputBox({ user }) {
     if (!inputRef.current.value) return;
 
     // Switching the mask
-    let name = user.displayName;
-    let image = user.photoURL;
-    if (selectedMask) {
-      name = selectedMask.name;
-      image = selectedMask.image;
+    let name = user?.displayName;
+    let image = user?.photoURL;
+    if (selectedGhost) {
+      name = selectedGhost.name;
+      image = selectedGhost.image;
     }
 
     // Injecting the post into our database
@@ -44,7 +46,7 @@ function InputBox({ user }) {
         message: inputRef.current.value,
         name: name,
         image: image,
-        email: user.email,
+        user: user?.uid,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         likes: 0,
       })
@@ -100,7 +102,7 @@ function InputBox({ user }) {
     <Card className={classes.root}>
       <div className="flex space-x-4 items-center">
         <Avatar
-          src={!selectedMask ? user.photoURL : selectedMask.image}
+          src={!selectedGhost ? user?.photoURL : selectedGhost.image}
           className="h-8 w-8"
         />
         <form className="flex flex-1 " onSubmit={sendPost}>
@@ -109,9 +111,9 @@ function InputBox({ user }) {
             className="rounded-full h-10 placeholder-gray-500 placeholder-opacity-100 bg-gray-100 flex-grow px-5 focus:outline-none w-full"
             type="text"
             placeholder={
-              selectedMask
-                ? `What you would say if you were, ${selectedMask.name}`
-                : `What's on your mind, ${user.displayName}`
+              selectedGhost
+                ? `What you would say if you were, ${selectedGhost.name}`
+                : `What's on your mind, ${user?.displayName}`
             }
           />
           <button className="hidden" onClick={sendPost}>

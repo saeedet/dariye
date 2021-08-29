@@ -12,16 +12,7 @@ const useStyles = makeStyles((theme) => ({
 
 const SubComment = forwardRef(
   (
-    {
-      name,
-      message,
-      image,
-      postId,
-      likes,
-      timestamp,
-      user,
-      displayReplyHandler,
-    },
+    { name, message, image, postId, likes, timestamp, displayReplyHandler },
     ref
   ) => {
     const classes = useStyles();

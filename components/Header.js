@@ -1,10 +1,12 @@
 import React from "react";
 import { Avatar } from "@material-ui/core";
 import firebase from "firebase";
-
 import { LogoutIcon } from "@heroicons/react/outline";
+import { useSelector } from "react-redux";
+import { selectUser } from "../redux/features/userSlice";
 
-function Header({ user }) {
+function Header() {
+  const user = useSelector(selectUser);
   return (
     <div className="w-full h-[70px] flex  justify-center items-center shadow-md bg-white z-10 absolute top-0 px-[8px]">
       <div className=" h-full flex flex-grow justify-between items-center ">
@@ -22,9 +24,9 @@ function Header({ user }) {
           </p>
           <Avatar
             className="object-contain w-10 h-10  transform group-hover:scale-90 transition duration-75"
-            src={user.photoURL}
+            src={user?.photoURL}
           >
-            {user.displayName}
+            {user?.displayName}
           </Avatar>
           <LogoutIcon className="w-10 h-10 text-gray-400 group-hover:text-red-400  group-active:scale-90" />
         </div>

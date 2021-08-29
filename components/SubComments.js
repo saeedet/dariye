@@ -9,7 +9,6 @@ import SubCommentInput from "./SubCommentInput";
 function SubComments({
   postId,
   displayReplyHandler,
-  user,
   commentInputRef,
   commentId,
 }) {
@@ -31,7 +30,6 @@ function SubComments({
             <SubComment
               displayReplyHandler={displayReplyHandler}
               postId={postId}
-              user={user}
               key={comment.id}
               createrId={comment.data().user}
               id={comment.id}
@@ -46,7 +44,6 @@ function SubComments({
       <SubCommentInput
         subComment={true}
         postId={postId}
-        user={user}
         commentInputRef={commentInputRef}
         commentId={commentId}
       />

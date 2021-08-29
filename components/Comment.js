@@ -6,6 +6,8 @@ import SubComments from "./SubComments";
 import { db } from "../firebase";
 import firebase from "firebase";
 import { useDocument } from "react-firebase-hooks/firestore";
+import { useSelector } from "react-redux";
+import { selectUser, selectUserLikes } from "../redux/features/userSlice";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -16,10 +18,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 // reusable
 const Comment = forwardRef(
-  (
-    { userLikes, postId, commentId, image, message, name, timestamp, user },
-    ref
-  ) => {
+  ({ postId, commentId, image, message, name, timestamp }, ref) => {
+    const userLikes = useSelector(selectUserLikes);
+    const user = useSelector(selectUser);
     const classes = useStyles();
     const [displayReply, setDisplayReply] = useState(false);
 
@@ -48,7 +49,7 @@ const Comment = forwardRef(
       if (!liked) {
         // if the post is not liked
         db.collection("users")
-          .doc(user.uid)
+          .doc(user?.uid)
           .collection("likes")
           .doc(id)
           .set({
@@ -59,7 +60,7 @@ const Comment = forwardRef(
       } else {
         // if the post is already liked
         db.collection("users")
-          .doc(user.uid)
+          .doc(user?.uid)
           .collection("likes")
           .doc(id)
           .delete()
@@ -132,7 +133,6 @@ const Comment = forwardRef(
           <SubComments
             displayReplyHandler={displayReplyHandler}
             commentInputRef={commentInputRef}
-            user={user}
             postId={postId}
             commentId={commentId}
           />

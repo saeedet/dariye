@@ -19,6 +19,8 @@ import { MoreHorizOutlined } from "@material-ui/icons";
 import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
 import Comments from "./Comments";
 import fromnow from "fromnow";
+import { useSelector } from "react-redux";
+import { selectUser, selectUserLikes } from "../redux/features/userSlice";
 
 // Card style
 const useStyles = makeStyles((theme) => ({
@@ -48,21 +50,23 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Post = forwardRef(
-  (
-    { name, message, postImage, image, timestamp, id, user, userLikes },
-    ref
-  ) => {
+  ({ name, message, postImage, image, timestamp, postId }, ref) => {
+    const userLikes = useSelector(selectUserLikes);
+    const user = useSelector(selectUser);
     const inputViewRef = useRef(null);
     const [renderComments, setRenderComments] = useState(false);
     const [displayComments, setDisplayComments] = useState(false);
     const [likesCount, setLikesCount] = useState(0);
     const [liked, setLiked] = useState(false);
     const classes = useStyles();
+
+    // Realtime comments count
     const [realtimeCommentsCount] = useCollection(
-      db.collection("posts").doc(id).collection("comments")
+      db.collection("posts").doc(postId).collection("comments")
     );
-    const [likes, loading, error] = useDocument(
-      firebase.firestore().doc(`posts/${id}`)
+    // Realtime post hook
+    const [post, loading, error] = useDocument(
+      firebase.firestore().doc(`posts/${postId}`)
     );
 
     //Scroll to comment input logic
@@ -105,13 +109,13 @@ const Post = forwardRef(
 
     // changing the likes count whenever it changes in database
     useEffect(() => {
-      setLikesCount(likes?.data().likes);
-    }, [likes?.data().likes]);
+      setLikesCount(post?.data().likes);
+    }, [post?.data().likes]);
 
     //Check if the post is already liked
 
     useEffect(() => {
-      if (userLikes.includes(id)) {
+      if (userLikes.includes(postId)) {
         setLiked(true);
       }
     }, [userLikes]);
@@ -121,7 +125,7 @@ const Post = forwardRef(
       if (!liked) {
         // if the post is not liked
         db.collection("users")
-          .doc(user.uid)
+          .doc(user?.uid)
           .collection("likes")
           .doc(id)
           .set({
@@ -132,7 +136,7 @@ const Post = forwardRef(
       } else {
         // if the post is already liked
         db.collection("users")
-          .doc(user.uid)
+          .doc(user?.uid)
           .collection("likes")
           .doc(id)
           .delete()
@@ -210,7 +214,7 @@ const Post = forwardRef(
               size="small"
               color="primary"
               className={`flex-1 `}
-              onClick={() => likePost(id)}
+              onClick={() => likePost(postId)}
             >
               <ThumbUpIcon
                 className={`h-4 ${liked ? "text-blue-500" : "text-gray-600"}`}
@@ -244,11 +248,8 @@ const Post = forwardRef(
         </div>
         {renderComments && (
           <Comments
-            userLikes={userLikes}
-            renderComments={renderComments}
-            postId={id}
+            postId={postId}
             displayComments={displayComments}
-            user={user}
             inputViewRef={inputViewRef}
           />
         )}

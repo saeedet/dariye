@@ -6,20 +6,33 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Feed from "../components/Feed";
 import Widgets from "../components/Widgets";
-import { setMasks } from "../redux/features/memberSlice";
+import { setGhosts } from "../redux/features/ghostSlice";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Auth from "../components/Auth";
 import firebase from "firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
+import { setUser, setUserLikes } from "../redux/features/userSlice";
 
 export default function Home({ posts, ghosts }) {
   const [user, loading, error] = useAuthState(firebase.auth());
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(setMasks(ghosts));
+    dispatch(setGhosts(ghosts));
   }, []);
 
+  if (user) {
+    dispatch(
+      setUser({
+        uid: user.uid,
+        photoURL: user.photoURL,
+        displayName: user.displayName,
+        email: user.email,
+      })
+    );
+  }
+
+  // Updating goasts in realtime
   const [realtimeGhosts] = useCollection(
     db.collection("ghosts").orderBy("timestamp", "desc")
   );
@@ -30,8 +43,20 @@ export default function Home({ posts, ghosts }) {
       name: ghost.data().name,
       src: ghost.data().src,
     }));
-    dispatch(setMasks(ghostsDocs));
+    dispatch(setGhosts(ghostsDocs));
   }, [realtimeGhosts]);
+
+  // Updating user likes in realtime
+  const [realtimeUserLikes] = useCollection(
+    db.collection("users").doc(user?.uid).collection("likes")
+  );
+  useEffect(() => {
+    let userLikes = [];
+    realtimeUserLikes?.docs.map((doc) => {
+      userLikes.push(doc.id);
+    });
+    dispatch(setUserLikes(userLikes));
+  }, [realtimeUserLikes]);
 
   return (
     <div className="flex flex-col max-h-screen bg-gray-100 relative">
@@ -45,11 +70,11 @@ export default function Home({ posts, ghosts }) {
       {!user && <Auth />}
       {user && (
         <>
-          <Header user={user} />
+          <Header />
           <div className="flex pl-0 pr-2 sm:px-2 pt-[70px] max-h-screen ">
-            <Sidebar user={user} />
-            <Feed posts={posts} user={user} />
-            <Widgets user={user} />
+            <Sidebar />
+            <Feed posts={posts} />
+            <Widgets />
           </div>
         </>
       )}
@@ -84,7 +109,7 @@ export async function getServerSideProps() {
   }));
   return {
     props: {
-      // ghosts: ghostsDocs,
+      ghosts: ghostsDocs,
       posts: postsDocs,
     },
   };

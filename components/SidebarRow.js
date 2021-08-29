@@ -1,18 +1,20 @@
 // import Image from "next/image";
 import { Avatar } from "@material-ui/core";
 import React from "react";
-import { useDispatch } from "react-redux";
-import { setSelectedMask } from "../redux/features/memberSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedGhost } from "../redux/features/ghostSlice";
+import { selectUser } from "../redux/features/userSlice";
 
-function SidebarRow({ src, title, user }) {
+function SidebarRow({ src, title }) {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
 
   const clickHandler = (name, image) => {
-    if (user.displayName == name) {
-      dispatch(setSelectedMask(null));
+    if (user?.displayName == name) {
+      dispatch(setSelectedGhost(null));
     } else {
       dispatch(
-        setSelectedMask({
+        setSelectedGhost({
           name,
           image,
         })

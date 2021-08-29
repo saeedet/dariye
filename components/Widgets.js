@@ -1,12 +1,14 @@
 import { Card } from "@material-ui/core";
 import React from "react";
 import { useSelector } from "react-redux";
-import { selectMasks } from "../redux/features/memberSlice";
+import { selectGhosts } from "../redux/features/ghostSlice";
+import { selectUser } from "../redux/features/userSlice";
 import AddGhost from "./AddGhost";
 import Member from "./Member";
 
-function Widgets({ user }) {
-  const masks = useSelector(selectMasks);
+function Widgets() {
+  const user = useSelector(selectUser);
+  const ghosts = useSelector(selectGhosts);
   return (
     <div className="hidden lg:flex flex-col w-60  p-2 pt-5 h-full max-h-screen overflow-scroll scrollbar-hide mr-4 ">
       <Card>
@@ -14,8 +16,8 @@ function Widgets({ user }) {
           <h2 className="text-xl">Online Ghosts</h2>
         </div>
         <div className="flex w-full flex-wrap p-2">
-          <Member src={user.photoURL} key={user.photoURL} />
-          {masks?.map((item) => (
+          <Member src={user?.photoURL} key={user?.photoURL} />
+          {ghosts?.map((item) => (
             <Member key={item.src} src={item.src} />
           ))}
         </div>

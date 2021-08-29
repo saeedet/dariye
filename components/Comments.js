@@ -5,14 +5,7 @@ import FlipMove from "react-flip-move";
 import Comment from "./Comment";
 import CommentInput from "./CommentInput";
 
-function Comments({
-  renderComments,
-  postId,
-  displayComments,
-  user,
-  inputViewRef,
-  userLikes,
-}) {
+function Comments({ postId, displayComments, inputViewRef }) {
   const [realtimeComments] = useCollection(
     db
       .collection("posts")
@@ -29,14 +22,11 @@ function Comments({
           {realtimeComments &&
             realtimeComments.docs.map((comment) => (
               <Comment
-                userLikes={userLikes}
                 postId={postId}
-                user={user}
                 key={comment.id}
                 commentId={comment.id}
                 name={comment.data().name}
                 message={comment.data().message}
-                email={comment.data().email}
                 timestamp={comment.data().timestamp}
                 image={comment.data().image}
               />
@@ -44,7 +34,7 @@ function Comments({
         </FlipMove>
       </div>
       <div className={displayComments ? "" : "hidden"}>
-        <CommentInput postId={postId} user={user} inputViewRef={inputViewRef} />
+        <CommentInput postId={postId} inputViewRef={inputViewRef} />
       </div>
     </>
   );

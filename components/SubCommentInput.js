@@ -2,8 +2,9 @@ import { Avatar, makeStyles } from "@material-ui/core";
 import React, { useRef } from "react";
 import { useSelector } from "react-redux";
 import { db } from "../firebase";
-import { selectSelectedMask } from "../redux/features/memberSlice";
+import { selectSelectedGhost } from "../redux/features/ghostSlice";
 import firebase from "firebase";
+import { selectUser } from "../redux/features/userSlice";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -13,21 +14,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function SubCommentInput({ postId, user, commentInputRef, commentId }) {
+function SubCommentInput({ postId, commentInputRef, commentId }) {
+  const user = useSelector(selectUser);
   const classes = useStyles();
   const subCommentInputRef = useRef(null);
-  const selectedMask = useSelector(selectSelectedMask);
+  const selectedGhost = useSelector(selectSelectedGhost);
 
   const sendSubComment = (e) => {
     e.preventDefault();
     if (!subCommentInputRef.current.value) return;
 
     // Switching the mask
-    let name = user.displayName;
-    let image = user.photoURL;
-    if (selectedMask) {
-      name = selectedMask.name;
-      image = selectedMask.image;
+    let name = user?.displayName;
+    let image = user?.photoURL;
+    if (selectedGhost) {
+      name = selectedGhost.name;
+      image = selectedGhost.image;
     }
 
     // Injecting the comment into our database
@@ -42,7 +44,7 @@ function SubCommentInput({ postId, user, commentInputRef, commentId }) {
         message: subCommentInputRef.current.value,
         name: name,
         image: image,
-        user: user.uid,
+        user: user?.uid,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         likes: 0,
       });
@@ -53,7 +55,7 @@ function SubCommentInput({ postId, user, commentInputRef, commentId }) {
   return (
     <div className="flex px-[16px] py-[4px] items-center my-[4px]">
       <Avatar
-        src={!selectedMask ? user.photoURL : selectedMask.image}
+        src={!selectedGhost ? user?.photoURL : selectedGhost.image}
         className={classes.avatar}
       />
       <form
