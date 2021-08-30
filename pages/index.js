@@ -73,17 +73,13 @@ export default function Home({ posts, ghosts }) {
     });
     dispatch(setUserCommentLikes(userCommentLikes));
   }, [realtimeUserCommentLikes]);
-
   return (
     <div className="flex flex-col max-h-screen bg-gray-100 relative">
       <Head>
         <title>GhostBook</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {loading && (
-        <p className="text-3xl font-semibold absolute top-5">Loading...</p>
-      )}
-      {!user && <Auth />}
+      {!user && <Auth loading={loading} />}
       {user && (
         <>
           <Header />
