@@ -62,8 +62,9 @@ const Post = forwardRef(
 
     // Realtime comments count
     const [realtimeCommentsCount] = useCollection(
-      db.collection("posts").doc(postId).collection("comments")
+      db.collectionGroup("comments").where("postId", "==", postId)
     );
+
     // Realtime post hook
     const [post, loading, error] = useDocument(
       firebase.firestore().doc(`posts/${postId}`)
