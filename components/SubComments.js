@@ -28,15 +28,15 @@ function SubComments({
         {realtimeSubComments &&
           realtimeSubComments.docs.map((comment) => (
             <SubComment
+              commentId={commentId}
               displayReplyHandler={displayReplyHandler}
               postId={postId}
               key={comment.id}
               createrId={comment.data().user}
-              id={comment.id}
+              replyId={comment.id}
               name={comment.data().name}
               message={comment.data().message}
               timestamp={comment.data().timestamp}
-              likes={comment.data().likes}
               image={comment.data().image}
             />
           ))}

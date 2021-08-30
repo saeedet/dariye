@@ -11,7 +11,11 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import Auth from "../components/Auth";
 import firebase from "firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { setUser, setUserLikes } from "../redux/features/userSlice";
+import {
+  setUser,
+  setUserCommentLikes,
+  setUserLikes,
+} from "../redux/features/userSlice";
 
 export default function Home({ posts, ghosts }) {
   const [user, loading, error] = useAuthState(firebase.auth());
@@ -57,6 +61,18 @@ export default function Home({ posts, ghosts }) {
     });
     dispatch(setUserLikes(userLikes));
   }, [realtimeUserLikes]);
+
+  // Updating user comment likes in realtime
+  const [realtimeUserCommentLikes] = useCollection(
+    db.collection("users").doc(user?.uid).collection("commentLikes")
+  );
+  useEffect(() => {
+    let userCommentLikes = [];
+    realtimeUserCommentLikes?.docs.map((doc) => {
+      userCommentLikes.push(doc.id);
+    });
+    dispatch(setUserCommentLikes(userCommentLikes));
+  }, [realtimeUserCommentLikes]);
 
   return (
     <div className="flex flex-col max-h-screen bg-gray-100 relative">
