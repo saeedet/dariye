@@ -47,6 +47,10 @@ const useStyles = makeStyles((theme) => ({
     borderBottom: "1px solid rgb(229, 231, 235)",
     padding: "5px 0",
   },
+  more: {
+    height: "30px",
+    width: "30px",
+  },
 }));
 
 const Post = forwardRef(
@@ -106,7 +110,7 @@ const Post = forwardRef(
       }
     };
 
-    //-------------------POST LIKES ---------------------//
+    //-------------------POST LIKES LOGIC---------------------//
 
     // changing the likes count whenever it changes in database
     useEffect(() => {
@@ -165,7 +169,7 @@ const Post = forwardRef(
             </Avatar>
           }
           action={
-            <IconButton aria-label="settings">
+            <IconButton aria-label="settings" className={classes.more}>
               <MoreHorizOutlined />
             </IconButton>
           }
@@ -213,13 +217,16 @@ const Post = forwardRef(
           <CardActions className={classes.buttonHolder}>
             <Button
               size="small"
-              color="primary"
+              color="secondary"
               className={`flex-1 `}
               onClick={() => likePost(postId)}
             >
-              <ThumbUpIcon
-                className={`h-4 ${liked ? "text-blue-500" : "text-gray-600"}`}
-              />
+              {liked ? (
+                <ThumbUpAltIcon className="h-4 text-blue-500" />
+              ) : (
+                <ThumbUpIcon className="h-4 text-gray-600" />
+              )}
+
               <p
                 className={`text-[10px] sm:text-xs capitalize pl-1 font-semibold ${
                   liked ? "text-blue-500" : "text-gray-600"

@@ -41,7 +41,7 @@ const Comment = forwardRef(
         .collection("comments")
     );
 
-    //-------------------POST LIKES ---------------------//
+    //-------------------Comment LIKES ---------------------//
     const [likes, loading, error] = useDocument(
       firebase.firestore().doc(`posts/${postId}/comments/${commentId}`)
     );
