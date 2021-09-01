@@ -217,7 +217,7 @@ const Post = forwardRef(
           <CardActions className={classes.buttonHolder}>
             <Button
               size="small"
-              color="secondary"
+              color="primary"
               className={`flex-1 `}
               onClick={() => likePost(postId)}
             >
