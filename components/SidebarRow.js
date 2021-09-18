@@ -27,7 +27,7 @@ function SidebarRow({ src, title }) {
     }
   };
   if (!selectedGhost && user?.displayName == title) {
-    bg = "bg-gray-200";
+    bg = "bg-gray-300";
   }
   return (
     <div

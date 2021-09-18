@@ -158,7 +158,7 @@ function InputBox() {
         >
           <SendIcon className="h-7 text-red-400" />
           <p className="hidden sm:inline-flex text-xs font-semibold text-gray-600 sm:text-sm xl:text-base">
-            Send a post
+            Send post
           </p>
         </div>
       </div>
